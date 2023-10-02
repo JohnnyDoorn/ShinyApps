@@ -1,0 +1,13 @@
+name: NHST_Binomial
+title: NHST_Binomial
+username:
+account: statisticalreasoning-uva
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9873792
+bundleId: 7701662
+url: https://statisticalreasoning-uva.shinyapps.io/NHST_Binomial/
+when: 1695106587.50023
+lastSyncTime: 1695106587.50024
+asMultiple: FALSE
+asStatic: FALSE

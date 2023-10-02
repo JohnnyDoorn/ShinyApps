@@ -1,0 +1,13 @@
+name: NHST_Fdistribution
+title: NHST_Fdistribution
+username:
+account: statisticalreasoning-uva
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10024669
+bundleId: 7754362
+url: https://statisticalreasoning-uva.shinyapps.io/NHST_Fdistribution/
+when: 1696279628.26891
+lastSyncTime: 1696279628.26891
+asMultiple: FALSE
+asStatic: FALSE
