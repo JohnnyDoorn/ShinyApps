@@ -5,9 +5,9 @@ account: statisticalreasoning-uva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10060888
-bundleId: 7754372
+bundleId: 7768444
 url: https://statisticalreasoning-uva.shinyapps.io/onewayANOVA/
-when: 1696279786.70183
-lastSyncTime: 1696279786.70184
+when: 1696533035.90107
+lastSyncTime: 1696533035.90108
 asMultiple: FALSE
 asStatic: FALSE

@@ -49,7 +49,7 @@ ui <- fluidPage(
                    choices = c("Yes", "Negative only", "Positive only")
       ),
       checkboxInput("displayF",
-                    "Display p-value for observed t-stat",value = FALSE
+                    "Display p-value for observed f-stat",value = FALSE
       ),
       numericInput("fVal",
                    "Observed F-stat:",
@@ -104,7 +104,7 @@ server <- function(input, output) {
          type = "h",
          lwd = 2,
          las = 1,
-         ylab = "Probability",
+         ylab = "Density",
          xlab = "F-Statistic",
          ylim = c(0, 1),
          xlim = c(0, max(xVals)),

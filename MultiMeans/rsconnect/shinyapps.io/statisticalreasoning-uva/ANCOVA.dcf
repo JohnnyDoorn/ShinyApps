@@ -1,0 +1,14 @@
+name: ANCOVA
+title: ANCOVA
+username:
+account: statisticalreasoning-uva
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10101827
+bundleId: 7768149
+url: https://statisticalreasoning-uva.shinyapps.io/ANCOVA/
+when: 1696528093.1311
+lastSyncTime: 1696528093.13119
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: covdata.csv

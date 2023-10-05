@@ -143,14 +143,14 @@ server <- function(input, output) {
   
   output$sampDistPlot <- renderPlot({
     
-    
+
     fVal <- myReactive()[["myMetrics"]][["F"]]
     ncp <- 0
     xVals <- seq(0.1, 10, length.out = 1e3)
     dfTreat <- myReactive()[["myMetrics"]][["Model.df"]]
     dfError <- myReactive()[["myMetrics"]][["Error.df"]]
     myAlpha <- 0.05
-    
+
     rightAbLineLoc <- qf(1-myAlpha,df1 = dfTreat, df2 = dfError, lower.tail = TRUE, ncp = 0) 
     rightArea <- round(pf(rightAbLineLoc, df1 = dfTreat, df2 = dfError, lower.tail = FALSE, ncp = ncp), 3)
     
