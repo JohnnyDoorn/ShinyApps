@@ -48,7 +48,8 @@ ui <- fluidPage(
                    c("Mean", "Group means", "Cov", "Group means + cov"), selected = "Mean"),
       checkboxGroupInput("whatDisplay",
                          "Display:",
-                         c("Segments", "Sums", "F-stat"))
+                         c("Segments", "Sums", "F-stat")),
+      downloadButton("downloadData", "Download")
     ),
     
     # Show a plot of the generated distribution
@@ -182,13 +183,24 @@ server <- function(input, output) {
     } else if (input$whatPred == "Group means + cov") {
       myMod <- lm(dv ~ group + age, data = data)
     } else if (input$whatPred == "Mean") {
-      myMod <- lm(dv ~ 1)
+      myMod <- lm(dv ~ 1, data = data)
     }
     
     data.frame(coef = names(myMod$coefficients),
                value = round(myMod$coefficients, 3))
     
   }, digits = 2)
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      # Use the selected dataset as the suggested file name
+      paste0(input$dataset, ".csv")
+    },
+    content = function(file) {
+      # Write the dataset to the `file` that will be downloaded
+      write.csv(data(), file)
+    }
+  )
   
 }
 
@@ -284,7 +296,6 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
       }
     }
   } 
-  
 }
 
 

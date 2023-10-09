@@ -1,0 +1,13 @@
+name: Multi-ANOVA
+title: Multi-ANOVA
+username:
+account: statisticalreasoning-uva-2
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10139989
+bundleId: 7782599
+url: https://statisticalreasoning-uva-2.shinyapps.io/Multi-ANOVA/
+when: 1696889744.93981
+lastSyncTime: 1696889744.93983
+asMultiple: FALSE
+asStatic: FALSE
