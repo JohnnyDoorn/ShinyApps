@@ -1,0 +1,13 @@
+name: samplingDist
+title: samplingDist
+username:
+account: researchmethodsuva
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7291605
+bundleId: 7791504
+url: https://researchmethodsuva.shinyapps.io/samplingDist/
+when: 1697050751.51013
+lastSyncTime: 1697050751.51014
+asMultiple: FALSE
+asStatic: FALSE

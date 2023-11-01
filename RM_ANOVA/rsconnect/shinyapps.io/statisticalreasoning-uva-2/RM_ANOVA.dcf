@@ -1,0 +1,13 @@
+name: RM_ANOVA
+title: RM_ANOVA
+username:
+account: statisticalreasoning-uva-2
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10176189
+bundleId: 7796650
+url: https://statisticalreasoning-uva-2.shinyapps.io/RM_ANOVA/
+when: 1697139138.27869
+lastSyncTime: 1697139138.27871
+asMultiple: FALSE
+asStatic: FALSE

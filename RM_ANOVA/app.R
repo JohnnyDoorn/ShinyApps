@@ -12,13 +12,13 @@ library(shinydashboard)
 
 # Define UI for application that draws a histogram
 ui <-  dashboardPage(
-  dashboardHeader(title = "More Squares"),
+  dashboardHeader(title = "Within Squares"),
   
   dashboardSidebar(width = 220,
                    sidebarMenu(style = "position:fixed;width:220px;",
                                (radioButtons("whatPred",
                                              "What model do we predict with?",
-                                             c("Mean", "Alcohol", "Speed", "Alcohol + Speed", "Alcohol + Speed + A:S"), 
+                                             c("Mean", "Alcohol", "Pp", "Alcohol + Pp"), 
                                              selected = "Mean")),
                                checkboxGroupInput("whatDisplay",
                                                   "Display:",
@@ -62,18 +62,21 @@ server <- function(input, output) {
 plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean = TRUE, 
                            alcColors = NULL, speedSymbols = NULL, overlayFullPred = FALSE) {
   
-  mydat <- read.csv("anova_alcohol_speed_daytime.csv")
+  # mydat <- read.csv("RM_ANOVA_AlcoholSpeedTime.csv")
+  mydat <- read.csv("RM_ANOVA_Alcohol_LONG.csv")
+  mydat$alcohol <- as.factor(mydat$alcohol)
+  mydat$pp <- as.factor(mydat$pp)
+  
   grandMean <- mean(mydat$accidents)
   nGroups <- 9
   myAlcMod <-  lm(accidents ~ alcohol, data = mydat)
-  mySpeedMod <- lm(accidents ~ speed, data = mydat)
-  myMainMod <- lm(accidents ~ alcohol + speed, data = mydat)
-  myFullMod <- lm(accidents ~ alcohol * speed, data = mydat)
-  
+  myPpMod <-  lm(accidents ~ pp, data = mydat)
+  myMainMod <- myFullMod <-lm(accidents ~ alcohol + pp, data = mydat)
+
   
   plot(mydat$accidents, col = "black" , pch = 21, bg = "blue", 
        cex = 1.8, lwd = 3, las = 1, bty = "n",
-       ylab = "Accidents", xlab = "Participant Nr.", xlim = c(0, length(mydat$accidents)), 
+       ylab = "Accidents", xlab = "Observation Nr.", xlim = c(0, length(mydat$accidents)), 
        ylim = c(0, 10), cex.lab = 1.3, cex.axis=1.3)
   totN <- nrow(mydat)
   
@@ -81,29 +84,35 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
     myMod <-  myAlcMod
     dfMod <- 2
     dfError <- totN - 3
-    myCols <- palette.colors(n = 3, palette = "Okabe-Ito")
-  } else if (input$whatPred == "Speed") {
-    myMod <- mySpeedMod
-    dfMod <- 2
-    predPoints <- mydat$predictedOnSpeed
-    dfError <- totN - 3
+    myBgs <- rep(palette.colors(n = 4, palette = "Okabe-Ito")[2:4], each = 20)
+    myShapes <- 23
+    myCols <- "black"
+    # myCols <- palette.colors(n = 3, palette = "Okabe-Ito")
+    
+  } else if (input$whatPred == "Pp") {
+    myMod <- myPpMod
+    dfMod <- 19
+    dfError <- totN - 20
     myCols <- palette.colors(n = 1, palette = "Okabe-Ito")
-  } else if (input$whatPred == "Alcohol + Speed") {
+    myBgs <- "darkgreen"
+    
+    myShapes <- 1:20
+  } else if (input$whatPred == "Alcohol + Pp") {
     myMod <- myMainMod
-    dfMod <- 4
-    predPoints <- mydat$predictedOnMain
-    dfError <- totN - 6
-  } else if (input$whatPred == "Alcohol + Speed + A:S") {
-    myMod <- myFullMod
-    dfMod <- 8
-    predPoints <- mydat$predictedOnFull
-    dfError <- totN - 9
-  } else if (input$whatPred == "Mean") {
+    dfMod <- 21
+    dfError <- totN - 22
+    myShapes <- 1:20
+    myCols <- rep(palette.colors(n = 4, palette = "Okabe-Ito")[2:4], each = 20)
+    myBgs <- "darkgreen"
+    
+  } else {
     myMod <- lm(accidents ~ 1, data = mydat)
-    predPoints <- rep(mean(mydat$accidents), totN)
-    modSumSquares <- 0
-    dfMod <- totN - (1 + 9)
-    dfError <- 1
+    dfMod <- 0
+    dfError <- totN - 1
+    myShapes <- 23
+    myBgs <- "darkgreen"
+    myCols <- "black"
+    
   }
   
   predPoints <- myMod$fitted.values
@@ -113,7 +122,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   
   fullModErrorSumSq <- sum(myFullMod$residuals^2)
   fullModAccSumSq <- sum((myFullMod$fitted.values - mean(mydat$accidents))^2)
-  fullModMeanSquareError <- fullModErrorSumSq / (totN - 9)
+  fullModMeanSquareError <- fullModErrorSumSq / (totN - 22)
   nulModError <- sum((mean(mydat$accidents) - mydat$accidents)^2)
   
   if (sumSq == "Total") {
@@ -121,7 +130,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
       abline(h = mean(mydat$accidents), lwd = 3, col = "purple")
     }
     if ("Segments" %in% input$whatDisplay) {
-      segments(x0 = mydat$subjects, x1 = mydat$subjects, y0 = mean(mydat$accidents), y1 = mydat$accidents, lwd = 2)
+      segments(x0 = 1:nrow(mydat), x1 = 1:nrow(mydat), y0 = mean(mydat$accidents), y1 = mydat$accidents, lwd = 2)
       if ("Sums" %in% input$whatDisplay) {
         mtext(paste0("Total Sum of Squares = ", round(nulModError, 2)), cex = 1.4)
       } else {
@@ -133,9 +142,9 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   
   if (sumSq == "Model") {
     abline(h = mean(mydat$accidents), lwd = 3, col = "purple")
-    points(x = mydat$subjects, y = predPoints, pch = 23, bg = "darkgreen", col = "black", cex = 1.35)
+    points(x = 1:nrow(mydat), y = predPoints, pch = myShapes, bg = myBgs, col = myCols, cex = 1.35, lwd = 2)
     if ("Segments" %in% input$whatDisplay) {
-      segments(x0 = mydat$subjects, x1 = mydat$subjects, y0 = predPoints, y1 = mean(mydat$accidents), lwd = 2, col = "darkgray")
+      segments(x0 = 1:nrow(mydat), x1 = 1:nrow(mydat), y0 = predPoints, y1 = mean(mydat$accidents), lwd = 2, col = "darkgray")
       if ("Sums" %in% input$whatDisplay) {
         if (input$whatPred == "Mean" | !("F-stat" %in% input$whatDisplay)) {
           mtext(paste0("Model Sum of Squares = ", round(modAccSumSquares, 3), "\nMean Square = ", round(modAccSumSquares/dfMod, 3)), cex = 1.4, line = 0)
@@ -152,11 +161,11 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   
   if (sumSq == "Error") {
     # abline(h = mean(mydat$dv), lwd = 3, col = "purple")
-    points(x = mydat$subjects, y = predPoints, pch = 23, bg = "darkgreen", col = "black", cex = 1.35)
+    points(x = 1:nrow(mydat), y = predPoints, pch = myShapes, bg = myBgs, col = myCols, cex = 1.35, lwd = 2)
     
     if ("Segments" %in% input$whatDisplay) {
       
-      segments(x0 = mydat$subjects, x1 = mydat$subjects, y0 = predPoints, y1 = mydat$accidents, lwd = 2)
+      segments(x0 = 1:nrow(mydat), x1 = 1:nrow(mydat), y0 = predPoints, y1 = mydat$accidents, lwd = 2)
       # s <- round(fullModAccSumSq - modAccSumSquares, 3)
       s <- round(modErrorSumSquares, 3)
       if ("Sums" %in% input$whatDisplay) {
@@ -166,7 +175,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
       }
       
       if (overlayFullPred) {
-        points(x = mydat$subjects, y = myFullMod$fitted.values, pch = 22, bg = "orange", col = "black", cex = 1.35)
+        points(x = 1:nrow(mydat), y = myFullMod$fitted.values, pch = 22, bg = "orange", col = "black", cex = 1.35)
         legend("topleft", c("Full model predictions", "Current model predictions"), pch = c(22,23), bty = "n", cex = 1.1, col = c("orange", "darkgreen"))
       }
     }
