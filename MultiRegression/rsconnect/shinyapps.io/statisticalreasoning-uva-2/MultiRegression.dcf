@@ -1,0 +1,13 @@
+name: MultiRegression
+title: MultiRegression
+username:
+account: statisticalreasoning-uva-2
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10508913
+bundleId: 7922355
+url: https://statisticalreasoning-uva-2.shinyapps.io/MultiRegression/
+when: 1699904656.30354
+lastSyncTime: 1699904656.30356
+asMultiple: FALSE
+asStatic: FALSE

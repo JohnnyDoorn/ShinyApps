@@ -140,7 +140,7 @@ server <- function(input, output) {
       text(-3.8, 5.9 * (sign(input$corXY+0.01)), bquote(r[xy] ~ "=" ~ .(round(cor(x, y), 2))), cex = 2)  
     }
     if ("cov" %in% input$metrics) {
-      text(-3.8, 5.2 * (sign(input$corXY+0.01)), bquote(cov[xy] ~ "=" ~ .(round(cor(x, y), 2))), cex = 2)  
+      text(-3.8, 5.2 * (sign(input$corXY+0.01)), bquote(cov[xy] ~ "=" ~ .(round(cov(x, y), 2))), cex = 2)  
     }
     if ("slope" %in% input$metrics) {
       text(-3.8, 4.5 * (sign(input$corXY+0.01)), bquote(beta[1] ~ "=" ~ .(round(myMod$coefficients[["x"]], 2))), cex = 2)  
