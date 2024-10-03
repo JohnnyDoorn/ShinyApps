@@ -37,10 +37,10 @@ ui <- fluidPage(
       radioButtons("alpha",
                    withMathJax("$$\\alpha$$"),
                    choices = c(0.01, 0.05, 0.2), 
-                   selected = 0.05),
-      radioButtons("flip",
-                   "Flip the dist!",
-                   choices = c("No", "Yes"))
+                   selected = 0.05)
+      # radioButtons("flip",
+      #              "Flip the dist!",
+      #              choices = c("No", "Yes"))
     ),
     
     # Show a plot of the generated distribution
@@ -75,10 +75,7 @@ server <- function(input, output) {
     
     par(cex = 1.4, cex.lab = 1.6)
     densValues <- dbinom(0:input$nFlips, input$nFlips, prob = input$theta)
-    if (input$flip == "Yes") {
-      densValues <- 1- densValues
-      densValues <- densValues / sum(densValues)
-    }
+    yMax <- max(densValues) * 1.2
     
     plot(0:input$nFlips, densValues, 
          col  = allCols, 
@@ -86,8 +83,8 @@ server <- function(input, output) {
          lwd = 20,
          las = 1,
          ylab = "Probability",
-         xlab = "Number of heads",
-         ylim = c(0, 0.5),
+         xlab = "Number of positive words",
+         ylim = c(0, yMax),
          xlim = c(-1, input$nFlips+1),
          # yaxt = 'n', 
          main = 'Sampling Distribution'
@@ -102,12 +99,14 @@ server <- function(input, output) {
       abline(v = leftAbLineLoc, lwd = 2, lty = 2)
       abline(v = rightAbLineLoc, lwd = 2, lty = 2)
       
-      text(-0.5, 0.4, leftArea, col = allCols[1], cex = 2)
-      text(input$nFlips+0.5, 0.4, rightArea, col = allCols[1], cex = 2)
+      text(-0.5, yMax*0.95, leftArea, col = allCols[1], cex = 2)
+      text(input$nFlips+0.5, yMax*0.95, rightArea, col = allCols[1], cex = 2)
       
-      text(mean(c(leftAbLineLoc, rightAbLineLoc)), 0.4, 1 - rightArea - leftArea, col = allCols[nLeftBars+2], cex = 2)
+      text(mean(c(leftAbLineLoc, rightAbLineLoc)), yMax*0.95, 1 - rightArea - leftArea, col = allCols[nLeftBars+2], cex = 2)
     }
-    # pbinom(input$nFlips + 1 - nLeftBars, input$nFlips, input$theta)
+
+    # Add the cumulative probabilities above the bars
+    text(0:input$nFlips, densValues + yMax * 0.04, round(densValues, 2), col = allCols, cex = 1.2)
     
     
   },

@@ -1,0 +1,14 @@
+name: test
+title: test
+username:
+account: researchmethodsuva
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1577317
+bundleId: 8045770
+url: https://researchmethodsuva.shinyapps.io/test/
+when: 1702494428.40119
+lastSyncTime: 1702494428.40119
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Bayes2_Johnny (copy).pptx|Bayes2_Johnny.pptx|BayesianPractic.docx|BayesianPractice.odt|beta_1_1.svg|beta_1_1Trunc.svg|beta_1_1TruncNeg.svg|fireworkBan.jasp|InClassDemonstrationBayesianInference.pdf|likelihoodLeftHandWithMarginalBeer.svg|MvO2018_Lecture_19 - Integrity & ethics BB.pptx|onesided.png|onesidedNegatie.png|onesidedPilot.png|onesidedPilotPost.png|plotsLecture23_Bayes.R|priorPosteriorBeer.svg|priorPosteriorBeerDickey.svg|priorPosteriorBeerDickeyNumbers.svg|PsychologistsTastingBeerResults.csv|PsychologistsTastingBeerResults.jasp|ShinyAppBinomialTestingMini.R|threeBetaPriorsTruncated.svg|twosidedBeer.png

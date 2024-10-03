@@ -37,13 +37,13 @@ ui <- fluidPage(
                   max = 5,
                   step = .1,
                   value = 1),
-      checkboxGroupInput("whatPred",
-                         "What do we predict with?",
-                         c("Mean", "Group means"), selected = "Mean"),
+      radioButtons("whatPred",
+                   "What do we predict with?",
+                   c("Mean", "Group means"), selected = "Mean"),
       checkboxInput("showComparison", "Show model improvement", value = FALSE),
       checkboxGroupInput("whatDisplay",
                          "Display:",
-                         c("Segments", "Sums"))
+                         c("Segments", "Sums", "F-stat"))
     ),
     
     # Show a plot of the generated distribution
@@ -121,15 +121,15 @@ server <- function(input, output) {
   output$distPlot <- renderPlot({
     
     par(mfrow = c(1, 3), cex = 1.5)
-    if ("Mean" %in% input$whatPred) {
-      plotSumSquares(myReactive()[["data"]], input = input, "Total")
+    if ("Mean" == input$whatPred) {
+      plotSumSquares(myReactive()[["data"]], input = input, "Total", stats = myReactive()[["myMetrics"]])
     } else {
-      plotSumSquares(myReactive()[["data"]], input = input, "Total", plotMean = FALSE)
+      plotSumSquares(myReactive()[["data"]], input = input, "Total", stats = myReactive()[["myMetrics"]], plotMean = FALSE)
     }
-    if ("Group means" %in% input$whatPred) {
-      plotSumSquares(myReactive()[["data"]], input = input, "Error")
+    if ("Group means" == input$whatPred) {
+      plotSumSquares(myReactive()[["data"]], input = input, "Error", stats = myReactive()[["myMetrics"]])
       if (input$showComparison) {
-        plotSumSquares(myReactive()[["data"]], input = input, "Model")
+        plotSumSquares(myReactive()[["data"]], input = input, "Model", stats = myReactive()[["myMetrics"]])
       } else {
         plot.new()
       }
@@ -189,14 +189,21 @@ server <- function(input, output) {
   width = 800, height = 800)
 }
 
+darken_color <- function(color, factor = 3) {
+  col_rgb <- col2rgb(color)
+  darkened_rgb <- col_rgb / factor
+  rgb(darkened_rgb[1,], darkened_rgb[2,], darkened_rgb[3,], maxColorValue = 255)
+}
 
-plotSumSquares <- function(data, input, sumSq = "Total", plotMean = TRUE) {
+plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean = TRUE) {
   
   myCols <- palette.colors(n = input$nGroups+1, palette = "Okabe-Ito")
+  # Darkening the colors
+  darkCols <- sapply(myCols, darken_color)
   
   plot(data$dv, col = "black" , pch = 21, bg = myCols[as.numeric(data$group)+1], cex = 1.8, lwd = 3, las = 1, bty = "n", 
        ylab = "Score", xlab = "Participant Nr.", xlim = c(0, length(data$dv)), ylim = c(2, 10), cex.lab = 1.3, cex.axis=1.3)
-  
+
   totN <- length(data$dv)
   # Calculate the grand mean
   grandMean <- mean(data$dv)
@@ -214,11 +221,10 @@ plotSumSquares <- function(data, input, sumSq = "Total", plotMean = TRUE) {
   totalMS <- (sum(nulModelError^2) / (totN - 1)) # total variance
   
   expVar <- (sum(modelAccuracy^2)) / (sum(nulModelError^2))
-  
+  fullModMeanSquareError <- round(stats[['Error.Sum.of.Squares']] / (totN - (input$nGroups)), 3)
+
   if (sumSq == "Total") {
-    if (plotMean) {
-      abline(h = mean(data$dv), lwd = 3, col = "purple")
-    }
+    abline(h = mean(data$dv), lwd = 3, col = "purple")
     if ("Segments" %in% input$whatDisplay) {
       segments(x0 = data$pp, x1 = data$pp, y0 = mean(data$dv), y1 = data$dv, lwd = 2)
       if ("Sums" %in% input$whatDisplay) {
@@ -229,6 +235,20 @@ plotSumSquares <- function(data, input, sumSq = "Total", plotMean = TRUE) {
     }
   } 
   
+  if (input$whatPred == "Group means") {
+    predPoints <- data$predictedOnGroup
+    modSumSquares <- stats[['Model.Sum.of.Squares']]
+    dfMod <- input$nGroups - 1
+    dfError <- totN - (input$nGroups)
+  } else if (input$whatPred == "Mean") {
+    predPoints <- rep(grandMean, totN)
+    modSumSquares <- 0
+    dfMod <- totN - (1 + input$nGroups)
+    dfError <- 1
+  }
+  
+  predPoints <- groupMeans[data$group]
+  
   if (sumSq == "Model") {
     abline(h = mean(data$dv), lwd = 3, col = "purple")
     for (i in 1:input$nGroups) {
@@ -237,18 +257,27 @@ plotSumSquares <- function(data, input, sumSq = "Total", plotMean = TRUE) {
                  h = groupMeans[i], lwd = 7, col = "black")
       ablineclip(x1 = which(data$group == levels(data$group)[i])[1]-0.5,
                  x2 = which(data$group == levels(data$group)[i])[input$groupN]+0.5,
-                 h = groupMeans[i], lwd = 3, col = rainbow(10)[i])
+                 h = groupMeans[i], lwd = 3, col = myCols[i+1])
     }
+    # points(x = data$pp, y = predPoints, pch = 23, bg = darkCols[as.numeric(data$group)+1], col = "black", cex = 1.35)
     
     if ("Segments" %in% input$whatDisplay) {
-      segments(x0 = data$pp, x1 = data$pp, y0 = groupMeans[as.numeric(data$group)], y1 = mean(data$dv), lwd = 2)
+      segments(x0 = data$pp, x1 = data$pp, y0 = predPoints, y1 = mean(data$dv), lwd = 2, col = myCols[as.numeric(data$group)+1])
       if ("Sums" %in% input$whatDisplay) {
-        mtext(paste0("Model Sum of Squares = ", round(sum(modelAccuracy^2), 2))  , cex = 1.8, line = 0)
+        if (input$whatPred == "Mean" | !("F-stat" %in% input$whatDisplay)) {
+          mtext(paste0("Model Sum of Squares = ", round(modSumSquares, 3)), cex = 1.4, line = 0)
+        } else {
+          mtext(paste0("Model Sum of Squares = ", round(modSumSquares, 3), 
+                       "\nMean Square = ", round(modSumSquares/dfMod, 3), 
+                       "\nF = ",round(modSumSquares/dfMod, 3),"/",fullModMeanSquareError, 
+                       " = ", round(round(modSumSquares/dfMod, 3)/fullModMeanSquareError, 3)) , cex = 1.4, line = 0)
+        }
       } else {
         mtext("Model improvement", cex = 1.8)
       }
     }
   }
+  
   
   if (sumSq == "Error") {
     for (i in 1:input$nGroups) {
@@ -257,18 +286,24 @@ plotSumSquares <- function(data, input, sumSq = "Total", plotMean = TRUE) {
                  h = groupMeans[i], lwd = 7, col = "black")
       ablineclip(x1 = which(data$group == levels(data$group)[i])[1]-0.5,
                  x2 = which(data$group == levels(data$group)[i])[input$groupN]+0.5,
-                 h = groupMeans[i], lwd = 3, col = rainbow(10)[i])
+                 h = groupMeans[i], lwd = 3, col = myCols[i+1])
     }
-    
+
+    # points(x = data$pp, y = predPoints, pch = 23, bg = darkCols[as.numeric(data$group)+1], col = "black", cex = 1.35)
     if ("Segments" %in% input$whatDisplay) {
-      segments(x0 = data$pp, x1 = data$pp, y0 = groupMeans[as.numeric(data$group)], y1 = data$dv, lwd = 2)
+      segments(x0 = data$pp, x1 = data$pp, y0 = predPoints, y1 = data$dv, lwd = 2)
+      totSumSquares <- round(stats[['Total.Sum.of.Squares']] - modSumSquares, 3)
       if ("Sums" %in% input$whatDisplay) {
-        mtext(paste0("Error Sum of Squares = ", round(sum(altModelError^2), 2))  , cex = 1.8)
+        if (input$whatPred == "Mean" | !("F-stat" %in% input$whatDisplay)) {
+          mtext(paste0("Error Sum of Squares = ", totSumSquares), cex = 1.4)
+        } else {
+          mtext(paste0("Error Sum of Squares = ", totSumSquares, "\n Mean Square = ", round(totSumSquares/dfError, 3)), cex = 1.4)
+        }
       } else {
         mtext("Model error", cex = 1.8)
       }
     }
-  } 
+  }
   
 }
 

@@ -198,16 +198,22 @@ server <- function(input, output) {
     },
     content = function(file) {
       # Write the dataset to the `file` that will be downloaded
-      write.csv(data(), file)
+      write.csv(myReactive()[["data"]], file)
     }
   )
   
 }
 
+darken_color <- function(color, factor = 1.6) {
+  col_rgb <- col2rgb(color)
+  darkened_rgb <- col_rgb / factor
+  rgb(darkened_rgb[1,], darkened_rgb[2,], darkened_rgb[3,], maxColorValue = 255)
+}
 
 plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean = TRUE) {
   
   myCols <- palette.colors(n = input$nGroups+1, palette = "Okabe-Ito")
+  darkCols <- sapply(myCols, darken_color)
   
   plot(data$dv, col = "black" , pch = 21, bg = myCols[as.numeric(data$group)+1], 
        cex = 1.8, lwd = 3, las = 1, bty = "n",
@@ -264,9 +270,9 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   
   if (sumSq == "Model") {
     abline(h = mean(data$dv), lwd = 3, col = "purple")
-    points(x = data$pp, y = predPoints, pch = 23, bg = "darkgreen", col = "black", cex = 1.35)
+    points(x = data$pp, y = predPoints, pch = 23, bg = darkCols[as.numeric(data$group)+1], col = "black", cex = 1.35)
     if ("Segments" %in% input$whatDisplay) {
-      segments(x0 = data$pp, x1 = data$pp, y0 = predPoints, y1 = mean(data$dv), lwd = 2, col = myCols[data$group])
+      segments(x0 = data$pp, x1 = data$pp, y0 = predPoints, y1 = mean(data$dv), lwd = 2, col = myCols[as.numeric(data$group)+1])
       if ("Sums" %in% input$whatDisplay) {
         if (input$whatPred == "Mean" | !("F-stat" %in% input$whatDisplay)) {
           mtext(paste0("Model Sum of Squares = ", round(modSumSquares, 3), "\nMean Square = ", round(modSumSquares/dfMod, 3)), cex = 1.4, line = 0)
@@ -283,11 +289,11 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   
   if (sumSq == "Error") {
     # abline(h = mean(data$dv), lwd = 3, col = "purple")
-    points(x = data$pp, y = predPoints, pch = 23, bg = "darkgreen", col = "black", cex = 1.35)
+    points(x = data$pp, y = predPoints, pch = 23, bg = darkCols[as.numeric(data$group)+1], col = "black", cex = 1.35)
     
     if ("Segments" %in% input$whatDisplay) {
       
-      segments(x0 = data$pp, x1 = data$pp, y0 = predPoints, y1 = data$dv, lwd = 2)
+      segments(x0 = data$pp, x1 = data$pp, y0 = predPoints, y1 = data$dv, lwd = 2, col = darkCols[as.numeric(data$group)+1])
       totSumSquares <- round(stats[stats[, 1] == 'Total.Sum.of.Squares', 2] - modSumSquares, 3)
       if ("Sums" %in% input$whatDisplay) {
         mtext(paste0("Error Sum of Squares = ", totSumSquares, "\n Mean Square = ", round(totSumSquares/dfError, 3)), cex = 1.4)
