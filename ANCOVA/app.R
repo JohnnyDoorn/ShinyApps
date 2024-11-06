@@ -38,7 +38,7 @@ ui <- fluidPage(
                   step = .1,
                   value = 1),
       sliderInput("covValue",
-                  "Association strength dv/cov:",
+                  "Association strength dv/cov (observed cor will differ due to sampling variability) :",
                   min = 0,
                   max = 1,
                   step = .1,
@@ -80,6 +80,7 @@ server <- function(input, output) {
     # Generate data for a factorial design with three groups
     groups <- factor(rep(1:input$nGroups, each = input$groupN))
     age <- round(rnorm(totN, 30, 5), 1)
+    
     dv <- rnorm(n = totN, 
                 mean = input$covValue * age, 
                 sd = 3)
@@ -94,6 +95,8 @@ server <- function(input, output) {
       dv = groupOneMean + dv,
       age = age
     )
+    write.csv(data, "data.csv")
+    
     groupMeans <- tapply(data$dv, data$group, mean)
     grandMean <- mean(data$dv)
     myFullMod <- lm(dv ~ group + age, data = data)

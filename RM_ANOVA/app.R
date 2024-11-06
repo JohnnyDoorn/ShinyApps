@@ -18,7 +18,7 @@ ui <-  dashboardPage(
                    sidebarMenu(style = "position:fixed;width:220px;",
                                (radioButtons("whatPred",
                                              "What model do we predict with?",
-                                             c("Mean", "Alcohol", "Pp", "Alcohol + Pp"), 
+                                             c("Mean", "Alcohol", "ID", "Alcohol + ID"), 
                                              selected = "Mean")),
                                checkboxGroupInput("whatDisplay",
                                                   "Display:",
@@ -89,7 +89,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
     myCols <- "black"
     # myCols <- palette.colors(n = 3, palette = "Okabe-Ito")
     
-  } else if (input$whatPred == "Pp") {
+  } else if (input$whatPred == "ID") {
     myMod <- myPpMod
     dfMod <- 19
     dfError <- totN - 20
@@ -97,7 +97,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
     myBgs <- "darkgreen"
     
     myShapes <- 1:20
-  } else if (input$whatPred == "Alcohol + Pp") {
+  } else if (input$whatPred == "Alcohol + ID") {
     myMod <- myMainMod
     dfMod <- 21
     dfError <- totN - 22
@@ -142,7 +142,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   
   if (sumSq == "Model") {
     abline(h = mean(mydat$accidents), lwd = 3, col = "purple")
-    points(x = 1:nrow(mydat), y = predPoints, pch = myShapes, bg = myBgs, col = myCols, cex = 1.35, lwd = 2)
+    points(x = 1:nrow(mydat), y = predPoints, pch = myShapes, bg = myBgs, col = myCols, cex = 1.35, lwd = 3)
     if ("Segments" %in% input$whatDisplay) {
       segments(x0 = 1:nrow(mydat), x1 = 1:nrow(mydat), y0 = predPoints, y1 = mean(mydat$accidents), lwd = 2, col = "darkgray")
       if ("Sums" %in% input$whatDisplay) {
@@ -161,11 +161,10 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   
   if (sumSq == "Error") {
     # abline(h = mean(mydat$dv), lwd = 3, col = "purple")
-    points(x = 1:nrow(mydat), y = predPoints, pch = myShapes, bg = myBgs, col = myCols, cex = 1.35, lwd = 2)
     
     if ("Segments" %in% input$whatDisplay) {
       
-      segments(x0 = 1:nrow(mydat), x1 = 1:nrow(mydat), y0 = predPoints, y1 = mydat$accidents, lwd = 2)
+      segments(x0 = 1:nrow(mydat), x1 = 1:nrow(mydat), y0 = predPoints, y1 = mydat$accidents, lwd = 2, col = "red")
       # s <- round(fullModAccSumSq - modAccSumSquares, 3)
       s <- round(modErrorSumSquares, 3)
       if ("Sums" %in% input$whatDisplay) {
@@ -178,7 +177,10 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
         points(x = 1:nrow(mydat), y = myFullMod$fitted.values, pch = 22, bg = "orange", col = "black", cex = 1.35)
         legend("topleft", c("Full model predictions", "Current model predictions"), pch = c(22,23), bty = "n", cex = 1.1, col = c("orange", "darkgreen"))
       }
+      
     }
+    points(x = 1:nrow(mydat), y = predPoints, pch = myShapes, bg = myBgs, col = myCols, cex = 1.35, lwd = 3)
+    
   } 
 }
 

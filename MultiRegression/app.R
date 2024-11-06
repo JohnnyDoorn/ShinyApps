@@ -15,6 +15,17 @@ ui <-  dashboardPage(
   dashboardHeader(title = "Interaction Regression"),
   
   dashboardSidebar(width = 220,
+                   tags$style(HTML("
+                                   .sidebar {
+                                       position: fixed;
+                                       height: calc(100vh - 50px); /* Adjust header height */
+                                       overflow-y: auto;
+                                       width: 220px;
+                                   }
+                                   .content-wrapper {
+                                       margin-left: 220px; /* Same as sidebar width */
+                                   }
+                               ")),
                    sidebarMenu(style = "position:auto;width:220px;",
                                (radioButtons("whatPred",
                                              "What model do we predict with?",

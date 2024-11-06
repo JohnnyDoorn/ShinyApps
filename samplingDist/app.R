@@ -22,8 +22,12 @@ ui <- fluidPage(
     #              choices = c("Observed", "Simulated")),
     # checkboxInput(inputId = "showPop",
     #               label = "Show Total",value = FALSE),
+    checkboxInput(inputId = "prevYears",
+                  label = "Include previous years",value = FALSE),
     checkboxInput(inputId = "showTheoreticalSamp",
-                  label = "Show Theoretical Distribution",value = FALSE)
+                  label = "Show Theoretical Distribution",value = FALSE),
+    checkboxInput(inputId = "include05",
+                  label = "Mark majority line",value = FALSE)
   ),
   
   # Show a plot of the generated distribution
@@ -33,7 +37,7 @@ ui <- fluidPage(
                 # tabPanel("Complete Data", htmlOutput("message"), 
                 #          style="font-size: 40px;"),
                 tabPanel("Observed Data", plotOutput("message")),
-                tabPanel("Estimating the Parameter?",  plotOutput("sampPlot"))
+                tabPanel("Sampling Distribution",  plotOutput("sampPlot"))
     )
   )
 )
@@ -44,68 +48,65 @@ server <- function(input, output) {
   results <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1RQp7gSbljHW-_SSU--ufcANJ0yycbAm2FJ8uplu5b2o/edit?usp=sharing")
   noMonth <- sapply(strsplit(results$Timestamp, split = "/"), function(x) x[[3]])
   years <- sapply(strsplit(noMonth, split = " "), function(x) x[[1]])
-  results <- results[years == "2023", ]
-  resp <- oriResp <- ifelse(results[[2]] == "Black & blue", "blackBlue", "whiteGold")
-  popSize <- length(resp)
+
+  # Create a reactive expression for filtered results based on input$prevYears
+  filteredResults <- reactive({
+    if (!input$prevYears) {
+      # If prevYears is FALSE, show only results from 2024
+      results[years == "2024", ]
+    } else {
+      # If prevYears is TRUE, show all years
+      results
+    }
+  })
   
-  # output$distPlot <- renderPlot({
-  #   
-  #   # if (input$source != "Observed") {
-  #   set.seed(123)
-  #   resp <- sample(resp, size = 1e4, replace = TRUE)
-  #   # }
-  #   popValue <- obsProp <- sum(resp == "whiteGold")/ length(resp)
-  #   
-  #   grNumbers <- rep(1:length(resp), each = input$ns)
-  #   maxGroup <- length(resp) %/%  input$ns
-  #   obsProps <- sapply(1:maxGroup, function(x){ sum(resp[which(grNumbers == x)] == "whiteGold")/  input$ns  })
-  #   obsProps <- obsProps[!is.na(obsProps)]
-  #   maxIndex <- min(input$showN, length(obsProps))
-  #   maxY <- ifelse(input$showN < 30, 12, round(max(table(obsProps[1:maxIndex])) + 2))
-  #   
-  #   par(cex.lab = 1.2, cex = 1.4)
-  #   myTable <- table(factor(round(obsProps[1:maxIndex], 2), levels = round((0:input$ns) / input$ns, 2)))
-  #   barplot(myTable, ylim = c(0, maxY), space = 0,  col = c("orange", "purple"), ylab = "Counts", xlab = "Observed proportion",
-  #           main = bquote(bar(p) ~ "=" ~ .(round(mean(obsProps[1:maxIndex]), 4))))
-  #   mtext(side = 3, text = paste0("Population size = ", popSize))
-  #   
-  #   if (input$showPop) {
-  #     abline(v = popValue * length(myTable) , lwd = 4, col = "darkgreen")
-  #   }
-  # })
+  # Reactive expression for responses (filtered)
+  resp <- reactive({
+    filtered <- filteredResults()
+    ifelse(filtered[[2]] == "Black & blue", "blackBlue", "whiteGold")
+  })
+  
+  # Reactive expression to calculate population size
+  popSize <- reactive({
+    length(resp())
+  })
+  
+  # Reactive expression for the observed proportion of "whiteGold"
+  obsProp <- reactive({
+    sum(resp() == "whiteGold") / popSize()
+  })
+
   
   output$sampPlot <- renderPlot({
+    popValue <- obsProp()
+    n <- popSize()
     
-    # if (input$source != "Observed") {
-    #   set.seed(123)
-    #   resp <- sample(resp, size = 1e4, replace = TRUE)
-    #   popSize <- Inf
-    # }
-    popValue <- obsProp <- sum(oriResp == "whiteGold")/ length(oriResp)
-    
-    binomSamples <- rbinom(1e6, popSize, obsProp)/ popSize
+    binomSamples <- rbinom(1e6, n, popValue)/ n
     par(cex = 1.4, cex.lab = 1.4)
-    hist(binomSamples, col = rainbow(10), xlab = "Observed Proportion", xlim = c(0,1),
-         main = "", freq = FALSE)
+    hist(binomSamples, col = rainbow(30), xlab = "Observed Proportion", xlim = c(0.2,0.8),
+         main = "", freq = FALSE, las = 1)
     if (input$showTheoreticalSamp) {
-      thisSD <- sqrt((obsProp * (1-obsProp)) / popSize)
-      curve(dnorm(x, mean = obsProp, sd = thisSD), from = 0, to = 1, lwd = 4, col= "black",add =TRUE)
-      mtext(paste0("Mean = ", round(obsProp, 3), "\nSE = sqrt((p * (1-p)) / n) = ", round(thisSD, 3)), cex = 2)
+      thisSD <- sqrt((popValue * (1-popValue)) / n)
+      curve(dnorm(x, mean = popValue, sd = thisSD), from = 0, to = 1, lwd = 4, col= "black",add =TRUE)
+      mtext(paste0("Mean = Prop(W&G) = ", round(popValue, 3), "\nSE = sqrt((p * (1-p)) / n) = ", round(thisSD, 3)), cex = 2)
+    }
+    if(input$include05){
+      abline(v = 0.5, lwd = 4, col = "black")
+      abline(v = 0.5, lwd = 2, col = "darkorange")
+      
     }
     
   })
   
   output$message <- renderPlot({
     
-    blue <- sum(results[[2]] == "Black & blue")
-    gold <- sum(results[[2]] != "Black & blue")
-    # mydf <- data.frame('Blue' = c(blue, round(blue/length(results[[2]]), 2)), 
-    #                    'White' = c(gold, round(gold/length(results[[2]]), 2)))
-    # mydf}, striped = TRUE)
+    blue <- sum(filteredResults()[[2]] == "Black & blue")
+    gold <- sum(filteredResults()[[2]] != "Black & blue")
+
     par(cex = 1.4, oma = c(3, 0, 0, 0))
-    barplot(c(blue, gold)/length(results[[2]]), names.arg = c("Black & blue", "White & gold") , col = c("darkblue", "gold"), las=1)
-    mtext(side = 1, text = paste0("Black & blue: ",blue, " (",round(blue/length(results[[2]]), 2), 
-                                  ")\nWhite & gold: ", gold," (",round(gold/length(results[[2]]), 2), ")") , cex = 2,
+    barplot(c(blue, gold)/length(filteredResults()[[2]]), names.arg = c("Black & blue", "White & gold") , col = c("darkblue", "gold"), las=1)
+    mtext(side = 1, text = paste0("Black & blue: ",blue, " (",round(blue/length(filteredResults()[[2]]), 2), 
+                                  ")\nWhite & gold: ", gold," (",round(gold/length(filteredResults()[[2]]), 2), ")") , cex = 2,
           outer = TRUE)
   })
 }

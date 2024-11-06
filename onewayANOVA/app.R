@@ -82,7 +82,7 @@ server <- function(input, output) {
       group = groups,
       dv = groupOneMean + dv
     )
-    
+    # write.csv(data, "data.csv")
     totN <- length(data$dv)
     # Calculate the grand mean
     grandMean <- mean(data$dv)

@@ -5,9 +5,7 @@ account: statisticalreasoning-uva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9907672
-bundleId: 7911106
+bundleId: 9318601
 url: https://statisticalreasoning-uva.shinyapps.io/NHST_Continuous/
-when: 1699619961.56591
-lastSyncTime: 1699619961.56592
 asMultiple: FALSE
 asStatic: FALSE
