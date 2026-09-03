@@ -11,16 +11,16 @@ library(shiny)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-  
+
   # Application title
   titlePanel("First Year Grade Calculator"),
-  
-  # Sidebar with a slider input for number of bins 
+
+  # Sidebar with a slider input for number of bins
   sidebarLayout(
     sidebarPanel(
       radioButtons("nMcOptions",
                    "Number of MC alternatives:",
-                   choices = c("2", "3", "4"), 
+                   choices = c("2", "3", "4"),
                    selected = "3"),
       numericInput("nMcQuestions",
                    "How many MC points are available?",
@@ -51,9 +51,11 @@ ui <- fluidPage(
                    min = 1,
                    step = 0.1,
                    max = 10,
-                   value = 0)
+                   value = 0),
+      radioButtons("resitYesNo",
+                   "Resit?", choices = c("No", "Yes")),
     ),
-    
+
     # Show a plot of the generated distribution
     mainPanel(
       plotOutput("distPlot")
@@ -63,20 +65,21 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-  
+
   # Use observe to dynamically update the slider max value
   observe({
     updateSliderInput(session, "nMcCorrect", max = input$nMcQuestions)
     updateSliderInput(session, "nOeCorrect", max = input$nOeQuestions)
   })
-  
+
   output$distPlot <- renderPlot({
     textCex <- 2.3
     # generate bins based on input$bins from ui.R
     cc <- input$nMcQuestions / as.numeric(input$nMcOptions)
     mc_mark <- ((input$nMcCorrect - cc) / (input$nMcQuestions - cc)) * 10
     oe_mark <- (input$nOeCorrect / input$nOeQuestions) * 10
-    yourGrade <- 0.8 * mc_mark + 0.2 * oe_mark
+    weights <- if (input$resitYesNo == "Yes") c(2/3, 1/3) else c(4/5, 1/5)
+    yourGrade <- weights[1] * mc_mark + weights[2] * oe_mark
     yourGrade <- max(c(min(c(yourGrade, 10)), 0))
     plot(1, 1, bty = "n", axes = FALSE, type = "n", xlab = "", ylab = "", ylim=c(0,2))
     text(1, 1.5, paste0("MC mark = ", round(mc_mark, 2)), cex = textCex)
@@ -85,5 +88,5 @@ server <- function(input, output, session) {
   })
 }
 
-# Run the application 
+# Run the application
 shinyApp(ui = ui, server = server)

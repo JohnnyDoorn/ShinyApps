@@ -83,6 +83,9 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
     dfError <- totN - 3
     myCols <- palette.colors(n = 3, palette = "Okabe-Ito")
     myCols <- rep(palette.colors(n = 9, palette = "Okabe-Ito")[2:4], each = 60)
+    if (sumSq != "Total")
+      legend("topleft", c("noneA", "someA", 'highA'), fill = unique(myCols), col = unique(myCols), bty = "n")
+    
     
   } else if (input$whatPred == "Speed") {
     myMod <- mySpeedMod
@@ -91,18 +94,30 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
     dfError <- totN - 3
     myCols <- palette.colors(n = 1, palette = "Okabe-Ito")
     myCols <- rep(palette.colors(n = 9, palette = "Okabe-Ito")[5:7], each = 20)
+    if (sumSq != "Total")
+      legend("topleft", c("noneS", "someS", 'highS'), fill = unique(myCols), col = unique(myCols), bty = "n")
+    
   } else if (input$whatPred == "Alcohol + Speed") {
     myMod <- myMainMod
     dfMod <- 4
     predPoints <- mydat$predictedOnMain
     dfError <- totN - 6
-    myCols <- rep(palette.colors(n = 9, palette = "Okabe-Ito")[2:8], each = 20)
+    
+    myCols <- rep(palette.colors(n = 9, palette = "Okabe-Ito"), each = 20)
+    if (sumSq != "Total")
+      legend("topleft", paste(rep(c("noneA", "someA", 'highA'), each =3), c("noneS", "someS", 'highS'), sep ="+"),
+           fill = unique(myCols), col = unique(myCols), bty = "n")
+    
   } else if (input$whatPred == "Alcohol + Speed + A:S") {
     myMod <- myFullMod
     dfMod <- 8
     predPoints <- mydat$predictedOnFull
     dfError <- totN - 9
     myCols <- rep(palette.colors(n = 9, palette = "Okabe-Ito")[2:8], each = 20)
+    myCols <- rep(palette.colors(n = 9, palette = "Okabe-Ito"), each = 20)
+    if (sumSq != "Total")
+      legend("topleft", paste(rep(c("noneA", "someA", 'highA'), each =3), c("noneS", "someS", 'highS'), sep ="+"),
+             fill = unique(myCols), col = unique(myCols), bty = "n")
     
   } else if (input$whatPred == "Mean") {
     myMod <- lm(accidents ~ 1, data = mydat)
@@ -113,6 +128,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
     myCols <- rep(palette.colors(n = 9, palette = "Okabe-Ito")[2], each = 180)
   }
   
+
   predPoints <- myMod$fitted.values
   modAccSumSquares <- sum((predPoints - mean(mydat$accidents))^2)
   modAccMeanSquare <- modAccSumSquares / dfMod

@@ -90,20 +90,16 @@ server <- function(input, output) {
     leftAbLineLoc <- qbinom(halfAlpha + (halfAlpha * (altHypothesis != "Yes")), input$nFlips, nulTheta, lower.tail = TRUE) - 0.5
     rightAbLineLoc <- qbinom(halfAlpha + (halfAlpha * (altHypothesis != "Yes")), input$nFlips, nulTheta, lower.tail = FALSE) + 0.5
     
-    twoCols <- c("darkgreen", "purple")
     xVals <- 0:input$nFlips
     if (input$decision == "Nothing") {
-      allCols <- rep(twoCols[1], input$nFlips+1) 
+      allCols <- rep("darkgreen", input$nFlips+1) 
     } else if (input$decision == "Reject H0") {
-      allCols <- ifelse(xVals >= nLeftBars & xVals <= nRightBars, twoCols[1], twoCols[2])
+      allCols <- ifelse(xVals >= nLeftBars & xVals <= nRightBars, "darkgreen", "purple")
       if (altHypothesis == "Negative only")
-        allCols <- ifelse(xVals >= nLeftBars, twoCols[1], twoCols[2])
+        allCols <- ifelse(xVals >= nLeftBars, "darkgreen", "purple")
     } else {
-      allCols <- ifelse(xVals >= nLeftBars & xVals <= nRightBars, twoCols[2], twoCols[1])
-      if (altHypothesis == "Negative only")
-        allCols <- ifelse(xVals >= nLeftBars, twoCols[2], twoCols[1])
-    } 
-    
+      allCols <- ifelse(xVals >= leftAbLineLoc & xVals <= rightAbLineLoc, "purple", "darkgreen")
+    }
     
     par(cex = 1.5, cex.lab = 1.6)
     densValues <- dbinom(0:input$nFlips, input$nFlips, prob = input$theta)

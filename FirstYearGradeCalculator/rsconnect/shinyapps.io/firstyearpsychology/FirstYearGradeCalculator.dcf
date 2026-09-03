@@ -5,7 +5,7 @@ account: firstyearpsychology
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 12911457
-bundleId: 9202252
+bundleId: 10244132
 url: https://firstyearpsychology.shinyapps.io/FirstYearGradeCalculator/
 version: 1
 asMultiple: FALSE

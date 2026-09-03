@@ -24,12 +24,12 @@ ui <- fluidPage(
                   max = 60,
                   step = 1,
                   value = 10),
-      # sliderInput("delta",
-      #             "Mean Difference (center of sampling distribution)",
-      #             min = -2,
-      #             max = 2,
-      #             step = 0.05,
-      #             value = 0),
+      sliderInput("delta",
+                  "Center of sampling distribution",
+                  min = -2,
+                  max = 2,
+                  step = 0.05,
+                  value = 0),
       # sliderInput("sd",
       #             "Standard deviation",
       #             min = 0.1,
@@ -49,7 +49,7 @@ ui <- fluidPage(
                    choices = c("Yes", "Negative only", "Positive only")
       ),
       checkboxInput("displayT",
-                    "Display p-value for observed t-stat",value = FALSE
+                    "Display p-value for observed t-stat (only works for center = 0)",value = FALSE
       ),
       numericInput("tVal",
                    "Observed t-stat:",
@@ -74,8 +74,8 @@ server <- function(input, output) {
   output$distPlot <- renderPlot({
 
     thisSD <- 1
-    myNCP <- 0 #input$delta /(thisSD)
-    myDF <- input$nFlips - 1
+    myNCP <- input$delta /(thisSD)
+    myDF <- input$nFlips - 2
     xVals <- seq(-5, 5, length.out = 1e3)
 
     halfAlpha <- as.numeric(input$alpha)/2

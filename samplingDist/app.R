@@ -24,8 +24,8 @@ ui <- fluidPage(
     #               label = "Show Total",value = FALSE),
     checkboxInput(inputId = "prevYears",
                   label = "Include previous years",value = FALSE),
-    checkboxInput(inputId = "showTheoreticalSamp",
-                  label = "Show Theoretical Distribution",value = FALSE),
+    # checkboxInput(inputId = "showTheoreticalSamp",
+    #               label = "Show Theoretical Distribution",value = FALSE),
     checkboxInput(inputId = "include05",
                   label = "Mark majority line",value = FALSE)
   ),
@@ -53,7 +53,7 @@ server <- function(input, output) {
   filteredResults <- reactive({
     if (!input$prevYears) {
       # If prevYears is FALSE, show only results from 2024
-      results[years == "2024", ]
+      results[years == "2025", ]
     } else {
       # If prevYears is TRUE, show all years
       results
@@ -80,16 +80,18 @@ server <- function(input, output) {
   output$sampPlot <- renderPlot({
     popValue <- obsProp()
     n <- popSize()
-    
+    set.seed(123)
     binomSamples <- rbinom(1e6, n, popValue)/ n
     par(cex = 1.4, cex.lab = 1.4)
-    hist(binomSamples, col = rainbow(30), xlab = "Observed Proportion", xlim = c(0.2,0.8),
-         main = "", freq = FALSE, las = 1)
-    if (input$showTheoreticalSamp) {
+    # hist(binomSamples, col = rainbow(30), xlab = "Observed Proportion", xlim = c(0.2,0.8),
+    #      main = "", freq = FALSE, las = 1)
+    # if (input$showTheoreticalSamp) {
       thisSD <- sqrt((popValue * (1-popValue)) / n)
-      curve(dnorm(x, mean = popValue, sd = thisSD), from = 0, to = 1, lwd = 4, col= "black",add =TRUE)
+      curve(dnorm(x, mean = popValue, sd = thisSD), from = 0, to = 1, lwd = 4, col= "purple",
+            xlab = "Observed Proportion", xlim = c(0.2,0.8), ylab = "Density",bty = "n",las = 1,
+            main = "")
       mtext(paste0("Mean = Prop(W&G) = ", round(popValue, 3), "\nSE = sqrt((p * (1-p)) / n) = ", round(thisSD, 3)), cex = 2)
-    }
+    # }
     if(input$include05){
       abline(v = 0.5, lwd = 4, col = "black")
       abline(v = 0.5, lwd = 2, col = "darkorange")

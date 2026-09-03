@@ -5,7 +5,8 @@ account: statisticalreasoning-uva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9873792
-bundleId: 9061874
+bundleId: 10600134
 url: https://statisticalreasoning-uva.shinyapps.io/NHST_Binomial/
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: app-twosided.R

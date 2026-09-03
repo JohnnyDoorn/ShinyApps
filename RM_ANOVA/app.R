@@ -23,8 +23,10 @@ ui <-  dashboardPage(
                                checkboxGroupInput("whatDisplay",
                                                   "Display:",
                                                   c("Segments", "Sums", "F-stat")),
-                               checkboxInput("overlayFullPred",
-                                             "Overlay full model", value = FALSE))
+                               # checkboxInput("overlayFullPred",
+                               #               "Overlay full model", value = FALSE),
+                               sliderInput("showSampleSize",
+                                             "Display (n)", value = 10, min = 4, max = 20))
   ),
   
   dashboardBody(
@@ -48,7 +50,7 @@ server <- function(input, output) {
     
     plotSumSquares(mydat, input = input, sumSq = "Error", 
                    alcColors = palette.colors(n = 3, palette = "Okabe-Ito"),
-                   speedSymbols = c(21, 22, 23), overlayFullPred = input$overlayFullPred)
+                   speedSymbols = c(21, 22, 23), overlayFullPred = FALSE)
     
     plotSumSquares(mydat, input = input, sumSq = "Model", 
                    alcColors = palette.colors(n = 3, palette = "Okabe-Ito"),
@@ -59,51 +61,62 @@ server <- function(input, output) {
 }
 
 
+
 plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean = TRUE, 
-                           alcColors = NULL, speedSymbols = NULL, overlayFullPred = FALSE) {
+                             alcColors = NULL, speedSymbols = NULL, overlayFullPred = FALSE) {
   
   # mydat <- read.csv("RM_ANOVA_AlcoholSpeedTime.csv")
   mydat <- read.csv("RM_ANOVA_Alcohol_LONG.csv")
   mydat$alcohol <- as.factor(mydat$alcohol)
+  mydat <- mydat[order(mydat$pp), ]
+  mydat <- mydat[mydat$pp <= input$showSampleSize, ]
   mydat$pp <- as.factor(mydat$pp)
   
+  totN <- nrow(mydat)
+  nGroups <- length(unique(mydat$alcohol))
   grandMean <- mean(mydat$accidents)
-  nGroups <- 9
+  nPerGroup <- length(unique(mydat$pp))
   myAlcMod <-  lm(accidents ~ alcohol, data = mydat)
   myPpMod <-  lm(accidents ~ pp, data = mydat)
   myMainMod <- myFullMod <-lm(accidents ~ alcohol + pp, data = mydat)
-
+  
+  
   
   plot(mydat$accidents, col = "black" , pch = 21, bg = "blue", 
-       cex = 1.8, lwd = 3, las = 1, bty = "n",
+       cex = 1.8, lwd = 3, las = 1, bty = "n", main = "",
        ylab = "Accidents", xlab = "Observation Nr.", xlim = c(0, length(mydat$accidents)), 
-       ylim = c(0, 10), cex.lab = 1.3, cex.axis=1.3)
+       ylim = c(3, 8), cex.lab = 1.3, cex.axis=1.3)
   totN <- nrow(mydat)
   
   if (input$whatPred == "Alcohol") {
     myMod <-  myAlcMod
-    dfMod <- 2
-    dfError <- totN - 3
-    myBgs <- rep(palette.colors(n = 4, palette = "Okabe-Ito")[2:4], each = 20)
+    dfMod <- nGroups -1
+    dfError <- (nGroups-1) * (nPerGroup-1)
+    myBgs <- palette.colors(n = 4, palette = "Okabe-Ito")[as.numeric(mydat$alcohol)+1]
     myShapes <- 23
     myCols <- "black"
-    # myCols <- palette.colors(n = 3, palette = "Okabe-Ito")
+    if (sumSq != "Total")
+      legend("topleft", c("noneA", "someA", 'highA'), fill = unique(myBgs), col = unique(myBgs), bty = "n", horiz = TRUE)
     
   } else if (input$whatPred == "ID") {
     myMod <- myPpMod
-    dfMod <- 19
-    dfError <- totN - 20
+    dfMod <- nPerGroup-1
+    dfError <- (nGroups-1) * (nPerGroup)
     myCols <- palette.colors(n = 1, palette = "Okabe-Ito")
     myBgs <- "darkgreen"
+    myShapes <- (1:nPerGroup)[mydat$pp]
+    if (sumSq != "Total")
+      legend("topleft", legend = 1:nPerGroup, pch = unique(myShapes), bty = "n", horiz = TRUE)
     
-    myShapes <- 1:20
   } else if (input$whatPred == "Alcohol + ID") {
     myMod <- myMainMod
-    dfMod <- 21
-    dfError <- totN - 22
-    myShapes <- 1:20
-    myCols <- rep(palette.colors(n = 4, palette = "Okabe-Ito")[2:4], each = 20)
+    dfMod <- (nGroups -1) + (nPerGroup-1)
+    dfError <- (nGroups -1) * (nPerGroup-1)
+    myShapes <- (1:nPerGroup)[mydat$pp]
+    myCols <- palette.colors(n = 4, palette = "Okabe-Ito")[as.numeric(mydat$alcohol)+1]
     myBgs <- "darkgreen"
+    if (sumSq != "Total")
+      legend("topleft", c("noneA", "someA", 'highA'), fill = unique(myCols), col = unique(myCols), bty = "n", horiz = TRUE)
     
   } else {
     myMod <- lm(accidents ~ 1, data = mydat)
@@ -122,7 +135,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   
   fullModErrorSumSq <- sum(myFullMod$residuals^2)
   fullModAccSumSq <- sum((myFullMod$fitted.values - mean(mydat$accidents))^2)
-  fullModMeanSquareError <- fullModErrorSumSq / (totN - 22)
+  fullModMeanSquareError <- fullModErrorSumSq / ( (nGroups -1) * (nPerGroup-1))
   nulModError <- sum((mean(mydat$accidents) - mydat$accidents)^2)
   
   if (sumSq == "Total") {
@@ -175,7 +188,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
       
       if (overlayFullPred) {
         points(x = 1:nrow(mydat), y = myFullMod$fitted.values, pch = 22, bg = "orange", col = "black", cex = 1.35)
-        legend("topleft", c("Full model predictions", "Current model predictions"), pch = c(22,23), bty = "n", cex = 1.1, col = c("orange", "darkgreen"))
+        legend("topright", c("Full model predictions", "Current model predictions"), pch = c(22,23), bty = "n", cex = 1.1, col = c("orange", "darkgreen"))
       }
       
     }

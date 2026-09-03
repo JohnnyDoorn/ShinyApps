@@ -44,10 +44,6 @@ ui <- fluidPage(
                    withMathJax("$$\\alpha$$"),
                    choices = c(0.01, 0.05, 0.2), 
                    selected = 0.05),
-      radioButtons("altHyp",
-                   "Two-sided?",
-                   choices = c("Yes", "Negative only", "Positive only")
-      ),
       checkboxInput("displayF",
                     "Display p-value for observed f-stat",value = FALSE
       ),
@@ -124,17 +120,9 @@ server <- function(input, output) {
     if (input$displayF) {
       twoSided <- input$altHyp == "Yes"
       arrows(x0 = fVal, x1 = fVal, y0 = 0, y1 = 0.4, lwd = 4, col = "darkblue")
-      if(twoSided) {
-        lowerTail <- fVal < 0
-        exVals <- xVals[abs(xVals) > abs(fVal)]
-      } else if (input$altHyp == "Negative only"){
-        lowerTail <- TRUE
-        exVals <- xVals[xVals < fVal]
-      } else {
-        lowerTail <- FALSE
-        exVals <- xVals[xVals > fVal]
-      }
-      thisP <- round(pf(fVal, df1 = dfTreat, df2 = dfError, lower.tail = FALSE, ncp = 0), 3)
+      lowerTail <- fVal < 0
+      exVals <- xVals[abs(xVals) > abs(fVal)]
+      thisP <- round(pf(fVal, df1 = dfTreat, df2 = dfError, lower.tail = FALSE, ncp = 0), 7)
       text(fVal, 0.44, paste0("p = ",thisP), cex = 2)
       lines(exVals, df(exVals,  df1 = dfTreat, df2 = dfError, ncp = 0), type = "h")
     }

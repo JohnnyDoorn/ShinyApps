@@ -5,7 +5,7 @@ account: statisticalreasoning-uva-2
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10139989
-bundleId: 9193179
+bundleId: 11037658
 url: https://statisticalreasoning-uva-2.shinyapps.io/Multi-ANOVA/
 asMultiple: FALSE
 asStatic: FALSE

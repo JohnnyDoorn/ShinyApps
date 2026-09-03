@@ -5,7 +5,7 @@ account: statisticalreasoning-uva-2
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10508913
-bundleId: 9292259
+bundleId: 9349593
 url: https://statisticalreasoning-uva-2.shinyapps.io/MultiRegression/
 asMultiple: FALSE
 asStatic: FALSE

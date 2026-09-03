@@ -88,7 +88,7 @@ server <- function(input, output) {
     
     set.seed(283) ## 
     predictor         <- rnorm(input$nSamples, 0, 3)
-    moderator         <- predictor + rnorm(input$nSamples, 0, 3) ## multicollinearity
+    moderator         <- rnorm(input$nSamples, 0, 3) 
     error     <- rnorm(input$nSamples, 0, 3) ## error
     intercept <- 0
     outcome   <- intercept + input$betaX*predictor + 
@@ -132,7 +132,7 @@ server <- function(input, output) {
     
     set.seed(283) ## 
     predictor         <- rnorm(input$nSamples, 0, 3)
-    moderator         <- predictor + rnorm(input$nSamples, 0, 3) ## multicollinearity
+    moderator         <- rnorm(input$nSamples, 0, 3)  
     error     <- rnorm(input$nSamples, 0, 3) ## error
     intercept <- 0
     outcome   <- intercept + input$betaX*predictor + 
@@ -177,7 +177,7 @@ server <- function(input, output) {
     # input <- list(betaX = 1, betaZ = 0.5, betaXZ = 0.2, input$nSamples = 10)
     set.seed(283) ##
     predictor         <- rnorm(input$nSamples, 0, 3)
-    moderator         <- predictor + rnorm(input$nSamples, 0, 3) ## multicollinearity
+    moderator         <- rnorm(input$nSamples, 0, 3) 
     error     <- rnorm(input$nSamples, 0, 3) ## error
     intercept <- 0
     outcome   <- intercept + input$betaX*predictor + 
