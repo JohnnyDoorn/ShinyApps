@@ -108,11 +108,11 @@ server <- function(input, output) {
     
     myMetrics <- data.frame('Total Sum of Squares' = sum(nulModelError^2),
                             'Model Sum of Squares' = sum(modelAccuracy^2),
-                            'Error Sum of Squares' = sum(altModelError^2),
+                            'Residual Sum of Squares' = sum(altModelError^2),
                             'Model df' = dfTreat,
-                            'Error df' = dfError,
+                            'Residual df' = dfError,
                             'Model Mean Squares' = modelMS,
-                            'Error Mean Squares' = errorMS,
+                            'Residual Mean Squares' = errorMS,
                             'F' = fVal)
     
     return(list(data = data, myMetrics = myMetrics))
@@ -148,7 +148,7 @@ server <- function(input, output) {
     ncp <- 0
     xVals <- seq(0.1, 10, length.out = 1e3)
     dfTreat <- myReactive()[["myMetrics"]][["Model.df"]]
-    dfError <- myReactive()[["myMetrics"]][["Error.df"]]
+    dfError <- myReactive()[["myMetrics"]][["Residual.df"]]
     myAlpha <- 0.05
 
     rightAbLineLoc <- qf(1-myAlpha,df1 = dfTreat, df2 = dfError, lower.tail = TRUE, ncp = 0) 
@@ -221,7 +221,7 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
   totalMS <- (sum(nulModelError^2) / (totN - 1)) # total variance
   
   expVar <- (sum(modelAccuracy^2)) / (sum(nulModelError^2))
-  fullModMeanSquareError <- round(stats[['Error.Sum.of.Squares']] / (totN - (input$nGroups)), 3)
+  fullModMeanSquareError <- round(stats[['Residual.Sum.of.Squares']] / (totN - (input$nGroups)), 3)
 
   if (sumSq == "Total") {
     abline(h = mean(data$dv), lwd = 3, col = "purple")
@@ -295,12 +295,12 @@ plotSumSquares <- function(data, input, sumSq = "Total", stats = NULL, plotMean 
       totSumSquares <- round(stats[['Total.Sum.of.Squares']] - modSumSquares, 3)
       if ("Sums" %in% input$whatDisplay) {
         if (input$whatPred == "Mean" | !("F-stat" %in% input$whatDisplay)) {
-          mtext(paste0("Error Sum of Squares = ", totSumSquares), cex = 1.4)
+          mtext(paste0("Residual Sum of Squares = ", totSumSquares), cex = 1.4)
         } else {
-          mtext(paste0("Error Sum of Squares = ", totSumSquares, "\n Mean Square = ", round(totSumSquares/dfError, 3)), cex = 1.4)
+          mtext(paste0("Residual Sum of Squares = ", totSumSquares, "\n Mean Square = ", round(totSumSquares/dfError, 3)), cex = 1.4)
         }
       } else {
-        mtext("Model error", cex = 1.8)
+        mtext("Model residuals", cex = 1.8)
       }
     }
   }

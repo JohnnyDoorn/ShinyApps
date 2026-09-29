@@ -31,7 +31,7 @@ ui <- fluidPage(
                   step = 0.05,
                   value = 0.5),
       radioButtons("decision",
-                   "Decision:",
+                   "Decision (purple indicates decision region):",
                    choices = c("Nothing", "Reject H0", "Do not reject H0")
       ),
       radioButtons("alpha",
@@ -39,8 +39,8 @@ ui <- fluidPage(
                    choices = c(0.01, 0.05, 0.2), 
                    selected = 0.05),
       radioButtons("altHyp",
-                   "Two-sided?",
-                   choices = c("Yes", "Negative only", "Positive only")
+                   "Alternative hypothesis",
+                   choices = c("$$H_A: \\theta \\neq 0.5$$", "$$H_A: \\theta < 0.5$$", "$$H_A: \\theta > 0.5$$")
       )
       # radioButtons("flip",
       #              "Flip the dist!",
@@ -64,7 +64,8 @@ server <- function(input, output) {
     nulTheta <- 0.5
     halfAlpha <- as.numeric(input$alpha)/2
     
-    altHypothesis <- input$altHyp
+    altHypothesis <- ifelse(input$altHyp == "$$H_A: \\theta \\neq 0.5$$", "Yes", 
+    ifelse (input$altHyp =="$$H_A: \\theta < 0.5$$", "Negative only", "Positive only"))
     
     # Determine the critical regions based on the chosen alternative hypothesis
     if (altHypothesis == "Yes") {

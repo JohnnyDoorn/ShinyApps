@@ -37,7 +37,7 @@ ui <- fluidPage(
       #             step = 0.05,
       #             value = 1),
       radioButtons("decision",
-                   "Decision: (overlay decision regions)",
+                   "Decision (purple indicates decision region):",
                    choices = c("Nothing", "Reject H0", "Do not reject H0")
       ),
       radioButtons("alpha",
@@ -45,8 +45,8 @@ ui <- fluidPage(
                    choices = c(0.01, 0.05, 0.2),
                    selected = 0.05),
       radioButtons("altHyp",
-                   "Two-sided?",
-                   choices = c("Yes", "Negative only", "Positive only")
+                   "Alternative hypothesis",
+                   choices = c("$$H_A: \\mu \\neq 0$$", "$$H_A: \\mu < 0$$", "$$H_A: \\mu > 0$$")
       ),
       checkboxInput("displayT",
                     "Display p-value for observed t-stat (only works for center = 0)",value = FALSE
@@ -81,12 +81,15 @@ server <- function(input, output) {
     halfAlpha <- as.numeric(input$alpha)/2
     tVal <- input$tVal
 
+    altHypothesis <- ifelse(input$altHyp == "$$H_A: \\mu \\neq 0$$", "Yes", 
+    ifelse (input$altHyp == "$$H_A: \\mu < 0$$", "Negative only", "Positive only"))
+
     leftAbLineLoc <- qt(halfAlpha, df = myDF, ncp = 0, lower.tail = TRUE)
     rightAbLineLoc <- qt(1-halfAlpha, df = myDF, ncp = 0, lower.tail = TRUE)
     leftArea <- round(pt(leftAbLineLoc, myDF, ncp = myNCP), 3)
     rightArea <- round(pt(rightAbLineLoc, myDF, ncp = myNCP, lower.tail = FALSE), 3)
 
-    if (input$altHyp == "Yes") {
+    if (altHypothesis == "Yes") {
       halfAlpha <- as.numeric(input$alpha)/2
       lowerTail <- tVal < 0
 
@@ -94,7 +97,7 @@ server <- function(input, output) {
       rightAbLineLoc <- qt(1-halfAlpha, df = myDF, ncp = 0, lower.tail = TRUE)
       leftArea <- round(pt(leftAbLineLoc, myDF, ncp = myNCP), 3)
       rightArea <- round(pt(rightAbLineLoc, myDF, ncp = myNCP, lower.tail = FALSE), 3)
-    } else if (input$altHyp == "Negative only"){
+    } else if (altHypothesis == "Negative only"){
       halfAlpha <- as.numeric(input$alpha)/2
 
       leftAbLineLoc <- qt(as.numeric(input$alpha), df = myDF, ncp = 0, lower.tail = TRUE)
@@ -103,7 +106,7 @@ server <- function(input, output) {
       rightArea <- round(pt(rightAbLineLoc, myDF, ncp = myNCP, lower.tail = FALSE), 3)
       lowerTail <- TRUE
 
-    } else if (input$altHyp == "Positive only"){
+    } else if (altHypothesis == "Positive only"){
       halfAlpha <- as.numeric(input$alpha)/2
 
       leftAbLineLoc <- qt(1, df = myDF, ncp = 0, lower.tail = FALSE)
@@ -115,11 +118,11 @@ server <- function(input, output) {
 
     twoCols <- c("darkgreen", "purple")
     if (input$decision == "Nothing") {
-      allCols <- rep("darkgreen", length(xVals))
+      allCols <- rep(twoCols[1], length(xVals))
     } else if (input$decision == "Reject H0") {
-      allCols <- ifelse(xVals > leftAbLineLoc & xVals < rightAbLineLoc, "darkgreen", "purple")
+      allCols <- ifelse(xVals > leftAbLineLoc & xVals < rightAbLineLoc, twoCols[1], twoCols[2])
     } else {
-      allCols <- ifelse(xVals > leftAbLineLoc & xVals < rightAbLineLoc, "purple", "darkgreen")
+      allCols <- ifelse(xVals > leftAbLineLoc & xVals < rightAbLineLoc, twoCols[2], twoCols[1])
     }
 
     par(cex = 1.4, cex.lab = 1.6)
@@ -150,12 +153,12 @@ server <- function(input, output) {
     }
 
     if (input$displayT) {
-      twoSided <- input$altHyp == "Yes"
+      twoSided <- altHypothesis == "Yes"
       arrows(x0 = tVal, x1 = tVal, y0 = 0, y1 = 0.4, lwd = 4, col = "darkred")
       if(twoSided) {
         lowerTail <- tVal < 0
         exVals <- xVals[abs(xVals) > abs(tVal)]
-      } else if (input$altHyp == "Negative only"){
+      } else if (altHypothesis == "Negative only"){
         lowerTail <- TRUE
         exVals <- xVals[xVals < tVal]
       } else {
