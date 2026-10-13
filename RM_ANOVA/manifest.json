@@ -923,10 +923,10 @@
   },
   "files": {
     "app.R": {
-      "checksum": "918d9e7df82fb54f571ec5fb66f51025"
+      "checksum": "127ac5794ccaaf24b2b985decfc8c12e"
     },
     "plotSquaresFunction.R": {
-      "checksum": "0ae93fb01c9e49a59b4378201d2f967c"
+      "checksum": "241304fd0098d9cdd1ffe0541c0da6be"
     },
     "RM_ANOVA_Alcohol_LONG.csv": {
       "checksum": "05f4f1f6c357a9d9c9ebe87cf7509aca"
