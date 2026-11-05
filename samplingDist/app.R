@@ -48,12 +48,13 @@ server <- function(input, output) {
   results <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1RQp7gSbljHW-_SSU--ufcANJ0yycbAm2FJ8uplu5b2o/edit?usp=sharing")
   noMonth <- sapply(strsplit(results$Timestamp, split = "/"), function(x) x[[3]])
   years <- sapply(strsplit(noMonth, split = " "), function(x) x[[1]])
+  thisYear <- format(Sys.Date(), "%Y")  # timestamps are DD/MM/YYYY; the lecture runs in October, so calendar year = cohort
 
   # Create a reactive expression for filtered results based on input$prevYears
   filteredResults <- reactive({
     if (!input$prevYears) {
-      # If prevYears is FALSE, show only results from 2024
-      results[years == "2025", ]
+      # If prevYears is FALSE, show only this year's results
+      results[years == thisYear, ]
     } else {
       # If prevYears is TRUE, show all years
       results
@@ -78,6 +79,7 @@ server <- function(input, output) {
 
   
   output$sampPlot <- renderPlot({
+    validate(need(popSize() > 0, paste("No responses yet for", thisYear)))
     popValue <- obsProp()
     n <- popSize()
     set.seed(123)
@@ -101,7 +103,7 @@ server <- function(input, output) {
   })
   
   output$message <- renderPlot({
-    
+    validate(need(popSize() > 0, paste("No responses yet for", thisYear)))
     blue <- sum(filteredResults()[[2]] == "Black & blue")
     gold <- sum(filteredResults()[[2]] != "Black & blue")
 

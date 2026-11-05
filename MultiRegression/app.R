@@ -1,7 +1,8 @@
 library(shiny)
 
-# Multiple regression: collinearity and interaction side by side, so students can see that
-# they are different things, with the variables of DSUJ's album sales example. Merged on
+# Multiple regression: collinearity and interaction in one app (each in its own tab since
+# 2026-11-05), so students can see that they are different things, with the variables of DSUJ's
+# album sales example. Merged on
 # 2026-10-26 from the earlier interaction applet (sums of squares, slope at a value of the
 # other predictor) and a collinearity applet. helpers.R holds the tables, simulation and plots;
 # its tables reproduce DSUJ's album sales output (chapter 8).
@@ -71,6 +72,7 @@ ui <- fluidPage(
                                value = FALSE),
                  plotOutput("ssPlot", height = "480px")),
         tabPanel("JASP output", uiOutput("jaspTables")),
+        tabPanel("Multicollinearity", plotOutput("collinearityPlot", height = "480px")),
         tabPanel("Interaction",
                  sliderInput("showAt", "Slope of Adverts at Airplay =", min = -2, max = 2, step = 0.1, value = 0),
                  plotOutput("interactionPlot", height = "480px")),
@@ -117,6 +119,10 @@ server <- function(input, output, session) {
 
   output$jaspTables <- renderUI({
     HTML(jaspTablesHtml(fits(), terms(), dv = "Sales"))
+  })
+
+  output$collinearityPlot <- renderPlot({
+    plotCollinearity(dat())
   })
 
   output$interactionPlot <- renderPlot({

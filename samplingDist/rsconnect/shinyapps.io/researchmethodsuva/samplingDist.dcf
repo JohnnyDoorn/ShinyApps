@@ -5,7 +5,5 @@ account: researchmethodsuva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7291605
-bundleId: 11007859
+bundleId: 12660915
 url: https://researchmethodsuva.shinyapps.io/samplingDist/
-asMultiple: FALSE
-asStatic: FALSE

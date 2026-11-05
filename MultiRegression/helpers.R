@@ -254,20 +254,25 @@ plotMatrix <- function(data, vars = c("Sales", "Adverts", "Airplay")) {
   }
 }
 
-# Interaction is not collinearity. Left: the predictors against each other (collinearity).
-# Right: Y against X1, coloured by X2, with the slope of X1 at three values of X2 from the
-# interaction model (simple slopes) and at the value `at` chosen in the app.
-plotInteraction <- function(data, at = 0) {
-  fit <- lm(Sales ~ Adverts * Airplay, data = data)
-  b   <- coef(fit)
-  r   <- cor(data$Adverts, data$Airplay)
-  par(mfrow = c(1, 2), cex = 0.8, cex.lab = 1.2, cex.main = 1.2, mar = c(5, 5, 6, 1))
-
+# Collinearity (Multicollinearity tab): the predictors against each other, with r and the VIF it
+# implies. Kept apart from the interaction plot (his call, 2026-11-05), because interaction is not
+# collinearity.
+plotCollinearity <- function(data) {
+  r <- cor(data$Adverts, data$Airplay)
+  par(cex = 1.0, cex.lab = 1.1, mar = c(5, 5, 6, 1))
   plot(data$Adverts, data$Airplay, pch = 21, bg = "grey70", col = "grey30", bty = "n", las = 1,
        xlab = "Adverts", ylab = "Airplay")
   abline(lm(Airplay ~ Adverts, data = data), lwd = 2)
   title("Collinearity: are Adverts and Airplay related?", line = 4)
   mtext(paste0("r = ", fmt(r), ",  VIF = ", fmt(1 / (1 - r^2))), side = 3, line = 1.5, cex = 1)
+}
+
+# Interaction (Interaction tab): Y against X1, coloured by X2, with the slope of X1 at three values
+# of X2 from the interaction model (simple slopes) and at the value `at` chosen in the app.
+plotInteraction <- function(data, at = 0) {
+  fit <- lm(Sales ~ Adverts * Airplay, data = data)
+  b   <- coef(fit)
+  par(cex = 1.0, cex.lab = 1.1, mar = c(5, 5, 6, 1))
 
   pal  <- colorRampPalette(c("steelblue", "grey85", "darkorange"))(101)
   z    <- (data$Airplay - mean(data$Airplay)) / sd(data$Airplay)
@@ -336,21 +341,26 @@ plotSumSquares <- function(outcome, prediction, nullPredictions, display, mainNu
   if ("Sums" %in% display) mtext(paste0("Residual Sum of Squares = ", round(errSumSq, 2)), cex = 1.1, line = 2)
 }
 
-# The data in 3D with the regression plane of M2 (flat) or M3 (twisted when there is an
-# interaction). plotly rather than rgl (as on the L21 slide), because rgl needs OpenGL
-# libraries on the server.
-plot3D <- function(data, model = "full") {
-  fit <- if (model == "full") lm(Sales ~ Adverts * Airplay, data = data) else lm(Sales ~ Adverts + Airplay, data = data)
-  g1  <- seq(min(data$Adverts), max(data$Adverts), length.out = 30)
-  g2  <- seq(min(data$Airplay), max(data$Airplay), length.out = 30)
-  z   <- outer(g1, g2, function(a, b) predict(fit, newdata = data.frame(Adverts = a, Airplay = b)))
+# The data in 3D with the regression plane of M2 (flat), M3 (twisted when there is an
+# interaction) or no plane (model = "none"). plotly rather than rgl (as on the L21 slide),
+# because rgl needs OpenGL libraries on the server. `vars` names the outcome and the two
+# predictors (also the axis titles); the defaults are the applet's album sales names.
+plot3D <- function(data, model = "full", vars = c(y = "Sales", x1 = "Adverts", x2 = "Airplay"),
+                   pointName = "Albums") {
+  d <- data.frame(y = data[[vars[["y"]]]], x1 = data[[vars[["x1"]]]], x2 = data[[vars[["x2"]]]])
   p <- plotly::plot_ly()
-  p <- plotly::add_markers(p, x = data$Adverts, y = data$Airplay, z = data$Sales, name = "Albums",
+  p <- plotly::add_markers(p, x = d$x1, y = d$x2, z = d$y, name = pointName,
                            marker = list(size = 3, color = "grey", line = list(color = "black", width = 1)))
-  p <- plotly::add_surface(p, x = g1, y = g2, z = t(z), opacity = 0.7, showscale = FALSE, name = "Model",
-                           colorscale = list(c(0, 1), c("darkgreen", "darkgreen")))
+  if (model != "none") {
+    fit <- if (model == "full") lm(y ~ x1 * x2, data = d) else lm(y ~ x1 + x2, data = d)
+    g1  <- seq(min(d$x1), max(d$x1), length.out = 30)
+    g2  <- seq(min(d$x2), max(d$x2), length.out = 30)
+    z   <- outer(g1, g2, function(a, b) predict(fit, newdata = data.frame(x1 = a, x2 = b)))
+    p <- plotly::add_surface(p, x = g1, y = g2, z = t(z), opacity = 0.7, showscale = FALSE, name = "Model",
+                             colorscale = list(c(0, 1), c("darkgreen", "darkgreen")))
+  }
   plotly::layout(p, showlegend = FALSE, margin = list(l = 0, r = 0, b = 0, t = 0),
-                 scene = list(xaxis = list(title = "Adverts"), yaxis = list(title = "Airplay"),
-                              zaxis = list(title = "Sales"), aspectmode = "cube",
+                 scene = list(xaxis = list(title = vars[["x1"]]), yaxis = list(title = vars[["x2"]]),
+                              zaxis = list(title = vars[["y"]]), aspectmode = "cube",
                               camera = list(eye = list(x = -1.3, y = -1.45, z = 0.6))))
 }
